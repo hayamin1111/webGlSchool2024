@@ -15,9 +15,10 @@ class ThreeApp {
     fovy: 60,
     aspect: window.innerWidth / window.innerHeight,
     near: 0.1,
-    far: 30.0,
-    position: new THREE.Vector3(0.0, 2.0, 30.0),
+    far: 40.0,
+    position: new THREE.Vector3(0.0, 5.0, 35.0),
     lookAt: new THREE.Vector3(0.0, 0.0, 0.0),
+    radius: 10,
   };
   /**
    * レンダラー定義のための定数
@@ -32,9 +33,9 @@ class ThreeApp {
    */
   static POINT_LIGHT_PARAM = {
     color: 0xffffff,
-    intensity: 10.0,
-    radius: 7,
-    centerOffset: 15,
+    intensity: 20.0,
+    radius: 9,
+    centerOffset: 20,
   };
   /**
    * アンビエントライト定義のための定数
@@ -114,27 +115,28 @@ class ThreeApp {
     this.material = new THREE.MeshPhongMaterial(ThreeApp.MATERIAL_PARAM);
 
     // boxの1列の数
-    const boxCount = 30;
+    const boxCountX = 30;
+    const boxCountZ = 30;
     //box間の余白
     const spacer = 1.2;
     //box群の半分の長さ（中心に移動させるため）
-    const offset = boxCount * spacer / 2;
+    const offsetX = boxCountX * spacer / 2;
 
-    this.boxGerometry = new THREE.BoxGeometry(1, 1, 1);
+    this.boxGerometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
     this. boxArray = [];
     //正方形にboxを並べる
-    for(let i = 0; i < boxCount; i ++) {
-      for(let j = 0; j < boxCount; j ++) {
+    for(let i = 0; i < boxCountX; i ++) {
+      for(let j = 0; j < boxCountZ; j ++) {
         //下段のbox群
         const boxLower = new THREE.Mesh(this.boxGerometry, this.material);
-        boxLower.position.x = i * spacer - offset;
+        boxLower.position.x = i * spacer - offsetX;
         boxLower.position.z = j * spacer;
         this.scene.add(boxLower);
         this.boxArray.push(boxLower);
 
         //上段のbox群
         const boxUpper = new THREE.Mesh(this.boxGerometry, this.material);
-        boxUpper.position.x = i * spacer - offset;
+        boxUpper.position.x = i * spacer - offsetX;
         boxUpper.position.y = 7;
         boxUpper.position.z = j * spacer;
         this.scene.add(boxUpper);
@@ -152,6 +154,7 @@ class ThreeApp {
 
     // this のバインド
     this.render = this.render.bind(this);
+    // this.rotateBoxes = this.rotateBoxes.bind(this);
 
     // キーの押下状態を保持するフラグ
     this.isDown = false;
@@ -204,6 +207,7 @@ class ThreeApp {
     this.pointLight.position.z = ThreeApp.POINT_LIGHT_PARAM.radius * Math.sin(this.tick) + ThreeApp.POINT_LIGHT_PARAM.centerOffset;
     this.pointLight.position.y = 4; 
 
+    this.camera.position.x = ThreeApp.CAMERA_PARAM.radius * Math.cos(this.tick / 3);
 
     // レンダラーで描画
     this.renderer.render(this.scene, this.camera);
