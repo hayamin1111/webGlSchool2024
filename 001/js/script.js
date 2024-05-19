@@ -152,7 +152,6 @@ class ThreeApp {
 
     // this のバインド
     this.render = this.render.bind(this);
-    // this.rotateBoxes = this.rotateBoxes.bind(this);
 
     // キーの押下状態を保持するフラグ
     this.isDown = false;
@@ -177,40 +176,8 @@ class ThreeApp {
       this.camera.updateProjectionMatrix();
     }, false);
 
-    //boxを定期的に回転する
-    // this.rotateBoxes();
-
     //時間経過で増加する値
     this.tick = 0;
-  }
-
-  //boxを5秒ごとに回転させる
-  // rotateBoxes() {
-  //   window.setInterval(() => {
-  //     this.boxArray.forEach((box) => {
-  //       box.rotation.x += 10; // 1秒ごとにboxを回転させる処理
-  //     });
-  //   }, 3000); 
-  // }
-
-  randomInt(min, max) {
-    //Math.random()で0~1までの数値をだし、(5 - 1)を0~1にかけることで4までの乱数が返る。
-    //そこへ1を足すことで、1~5の乱数となる。
-    // ex. return Math.random() * (5 - 1) + 1;
-    return Math.floor(Math.random() * (max - min) + min);
-  }
-
-  moveBoxes() {
-    // console.log(this.boxArray[30])
-    // console.log(this.randomInt(10, 100))
-    // this.boxArray[this.randomInt(10, 100)].position.y += 0.03;
-    // this.boxArray.forEach((box) => {
-    //   // box.position.y += 0.03;
-    // // console.log(boxArray)
-    // // console.log("!");
-    // // const randomInt = Math.floor(Math.random() * 10);
-    // // this.boxArray[10].position.x = 10;
-    // });
   }
 
   /**
@@ -237,7 +204,6 @@ class ThreeApp {
     this.pointLight.position.z = ThreeApp.POINT_LIGHT_PARAM.radius * Math.sin(this.tick) + ThreeApp.POINT_LIGHT_PARAM.centerOffset;
     this.pointLight.position.y = 4; 
 
-    this.moveBoxes();
 
     // レンダラーで描画
     this.renderer.render(this.scene, this.camera);
