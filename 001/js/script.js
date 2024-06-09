@@ -213,4 +213,3 @@ class ThreeApp {
     this.renderer.render(this.scene, this.camera);
   }
 }
-
