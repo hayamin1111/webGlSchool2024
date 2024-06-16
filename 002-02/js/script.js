@@ -149,6 +149,8 @@ class ThreeApp {
     this.cylinderMesh04.position.y = -6;
     this.scene.add(this.cylinderMesh04);
     
+
+    /* ----------- 羽の描画 ここから ------------------ */
     //羽用のジオメトリ、メッシュ
     const x = 0, y = 0;
     const radius = 3;
@@ -200,29 +202,30 @@ class ThreeApp {
       this.group01.add(mesh);
     }
     
-    //羽の増減（一旦断念...いずれ）
-    // const upButton = document.getElementById('js-increaseFans');
-    // upButton.addEventListener('click', (e) => {
-    //   if(this.fansNum < 16) {
-    //     this.fansNum++;
-    //   } else {
-    //     return;
-    //   }
-    // }, false);
+    //羽の増減
+    const upButton = document.getElementById('js-increaseFans');
+    upButton.addEventListener('click', (e) => {
+      if(this.fansNum < 16) {
+        this.fansNum++;
+      } else {
+        return;
+      }
+    }, false);
 
-    // const downButton = document.getElementById('js-reduceFans');
-    // downButton.addEventListener('click', (e) => {
-    //   if(this.fansNum > 3) {
-    //     this.fansNum--;
-    //   } else {
-    //     return;
-    //   }
-    // }, false);
+    const downButton = document.getElementById('js-reduceFans');
+    downButton.addEventListener('click', (e) => {
+      if(this.fansNum > 3) {
+        this.fansNum--;
+      } else {
+        return;
+      }
+    }, false);
+    /* ----------- 羽の描画 ここまで ------------------ */
 
     // 軸ヘルパー
-    // const axesBarLength = 5.0;
-    // this.axesHelper = new THREE.AxesHelper(axesBarLength);
-    // this.scene.add(this.axesHelper);
+    const axesBarLength = 5.0;
+    this.axesHelper = new THREE.AxesHelper(axesBarLength);
+    this.scene.add(this.axesHelper);
 
     //コントロール
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -253,9 +256,6 @@ class ThreeApp {
   render() {
     requestAnimationFrame(this.render);
     this.controls.update();
-
-    //fansNumの値を変更したい
-    // this.fansNum = this.fansNum;
 
     //羽の回転
     this.group01.rotation.z += 0.02;
