@@ -15,7 +15,7 @@ class ThreeApp {
     fovy: 60,
     aspect: window.innerWidth / window.innerHeight,
     near: 0.1,
-    far: 20.0,
+    far: 30.0,
     position: new THREE.Vector3(0.0, 5.0, 11.0),
     lookAt: new THREE.Vector3(0.0, 0.0, 0.0),
   };
@@ -71,6 +71,7 @@ class ThreeApp {
   group01;          // 羽用グループ
   group02;          // 首用グループ
   fansNum = 6;      //羽の数
+  fansGap = 12;     //羽の間隔
   tick = 0;         //首回転で使用する変数
   angle;            //首回転の角度
   // upButton;
@@ -98,7 +99,6 @@ class ThreeApp {
       ThreeApp.CAMERA_PARAM.near,
       ThreeApp.CAMERA_PARAM.far,
     );
-    //⭐️要確認：copy
     this.camera.position.copy(ThreeApp.CAMERA_PARAM.position);
     this.camera.lookAt(ThreeApp.CAMERA_PARAM.lookAt);
 
@@ -152,18 +152,17 @@ class ThreeApp {
     //羽用のジオメトリ、メッシュ
     const x = 0, y = 0;
     const radius = 3;
-    const fansGap = 12;
     const fanStartDegArray = [];
     const fanEndDegArray = [];
 
     /**
      * 羽の数から、それぞれの羽の円弧の開始点・終了点を生成する関数
      * @param {number} fansNum 羽の数
-     * @param {number} gap 羽と羽の間
+     * @param {number} fansGap 羽と羽の間
      */
-    function makeFansDeg(fansNum, gap) {
+    function makeFansDeg(fansNum, fansGap) {
       const fanDeg = 360 / fansNum; //羽1つあたりの角度
-      const fanDegFirst = fanDeg - gap; //羽1つ目の角度
+      const fanDegFirst = fanDeg - fansGap; //羽1つ目の角度
       for(let i = 0; i < 360; i+=fanDeg) {
         fanStartDegArray.push(i);
       }
@@ -171,12 +170,11 @@ class ThreeApp {
         fanEndDegArray.push(i);
       }
     }
-    makeFansDeg(this.fansNum, fansGap); //⭐️ここのthis.fansNumをrender内で更新すればよさそう
+    makeFansDeg(this.fansNum, this.fansGap);
 
     for(let i = 0; i < this.fansNum; i++) {
       const startRad = this.degToRad(fanStartDegArray[i]);
       const endRad = this.degToRad(fanEndDegArray[i]);  
-
       const fanShape = new THREE.Shape();
       //羽ジオメトリの始点
       fanShape.moveTo(x, y);
@@ -202,31 +200,29 @@ class ThreeApp {
       this.group01.add(mesh);
     }
     
-    //羽の増減
-    const upButton = document.getElementById('js-increaseFans');
-    upButton.addEventListener('click', (e) => {
-      if(this.fansNum < 16) {
-        this.fansNum++;
-      } else {
-        return;
-      }
-      console.log(this.fansNum);
-    }, false);
+    //羽の増減（一旦断念...いずれ再挑戦）
+    // const upButton = document.getElementById('js-increaseFans');
+    // upButton.addEventListener('click', (e) => {
+    //   if(this.fansNum < 16) {
+    //     this.fansNum++;
+    //   } else {
+    //     return;
+    //   }
+    // }, false);
 
-    const downButton = document.getElementById('js-reduceFans');
-    downButton.addEventListener('click', (e) => {
-      if(this.fansNum > 3) {
-        this.fansNum--;
-      } else {
-        return;
-      }
-      console.log(this.fansNum);
-    }, false);
+    // const downButton = document.getElementById('js-reduceFans');
+    // downButton.addEventListener('click', (e) => {
+    //   if(this.fansNum > 3) {
+    //     this.fansNum--;
+    //   } else {
+    //     return;
+    //   }
+    // }, false);
 
     // 軸ヘルパー
-    const axesBarLength = 5.0;
-    this.axesHelper = new THREE.AxesHelper(axesBarLength);
-    this.scene.add(this.axesHelper);
+    // const axesBarLength = 5.0;
+    // this.axesHelper = new THREE.AxesHelper(axesBarLength);
+    // this.scene.add(this.axesHelper);
 
     //コントロール
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -241,40 +237,6 @@ class ThreeApp {
     }, false);
   }
 
-  // /**
-  //  * 羽の数を増やすメソッド
-  //  * @return {number} 羽の数を返す
-  //  */
-  // increaseFans() {
-  //   this.upButton = document.getElementById('js-increaseFans');
-  //   upButton.addEventListener('click', (e) => {
-  //     if(this.fansNum < 16) {
-  //       this.fansNum++;
-  //     } else {
-  //       return;
-  //     }
-  //     console.log(this.fansNum);
-  //     return this.fansNum;
-  //   }, false);
-  // }
-
-  // /**
-  //  * 羽の数を減らすメソッド
-  //  * @return {number} 羽の数を返す
-  //  */
-  // reduceFans() {
-  //   this.downButton = document.getElementById('js-reduceFans');
-  //   downButton.addEventListener('click', (e) => {
-  //     if(this.fansNum > 3) {
-  //       this.fansNum--;
-  //     } else {
-  //       return;
-  //   }
-  //   console.log(this.fansNum);
-  //   return this.fansNum;
-  //   }, false);
-  // }
-
   /**
    * 度数法を弧度法に変換するメソッド
    * @param {number} deg 度数法での角度
@@ -284,7 +246,6 @@ class ThreeApp {
     return Math.PI * 2 / 360 * deg;
   }
 
-  
   /**
    * 描画処理
    */
@@ -305,5 +266,4 @@ class ThreeApp {
 
     this.renderer.render(this.scene, this.camera);
   }
-
 }
