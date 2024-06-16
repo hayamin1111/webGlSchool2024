@@ -74,8 +74,6 @@ class ThreeApp {
   fansGap = 12;     //羽の間隔
   tick = 0;         //首回転で使用する変数
   angle;            //首回転の角度
-  // upButton;
-  // downButton;
 
   /**
    *  コンストラクタ
@@ -152,8 +150,6 @@ class ThreeApp {
 
     /* ----------- 羽の描画 ここから ------------------ */
     //羽用のジオメトリ、メッシュ
-    const x = 0, y = 0;
-    const radius = 3;
     const fanStartDegArray = [];
     const fanEndDegArray = [];
 
@@ -174,6 +170,9 @@ class ThreeApp {
     }
     makeFansDeg(this.fansNum, this.fansGap);
 
+    //羽の円弧を描く
+    const x = 0, y = 0;
+    const radius = 3;
     for(let i = 0; i < this.fansNum; i++) {
       const startRad = this.degToRad(fanStartDegArray[i]);
       const endRad = this.degToRad(fanEndDegArray[i]);  
@@ -201,8 +200,9 @@ class ThreeApp {
       mesh.position.z = 0.6;
       this.group01.add(mesh);
     }
+    /* ----------- 羽の描画 ここまで ------------------ */
     
-    //羽の増減
+    //羽を増減させるイベント
     const upButton = document.getElementById('js-increaseFans');
     upButton.addEventListener('click', (e) => {
       if(this.fansNum < 16) {
@@ -220,7 +220,6 @@ class ThreeApp {
         return;
       }
     }, false);
-    /* ----------- 羽の描画 ここまで ------------------ */
 
     // 軸ヘルパー
     const axesBarLength = 5.0;
