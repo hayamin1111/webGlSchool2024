@@ -13,13 +13,25 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 class ThreeApp {
   /**
-   * 月に掛けるスケール
+   * UFOに掛けるスケール
    */
-  static UFO_SCALE = 0.004;
+  static UFO_SCALE = 0.002;
   /**
-   * 月と地球の間の距離
+   * 月とUFOの間の距離
    */
-  static UFO_DISTANCE = 1.6;
+  static UFO_DISTANCE = 2;
+  /**
+   * 月と敵の間の距離
+   */
+  static ENEMY_DISTANCE = 2.4;
+  /**
+   * 敵の移動速度
+   */
+  static ENEMY_SPEED = 0.03;
+  /**
+   * 敵の曲がる力
+   */
+  static ENEMY_TURN_SCALE = 0.1;
   /**
    * カメラ定義のための定数
    */
@@ -35,7 +47,6 @@ class ThreeApp {
    * レンダラー定義のための定数
    */
   static RENDERER_PARAM = {
-    clearColor: 0x16323E,
     width: window.innerWidth,
     height: window.innerHeight,
   };
@@ -55,10 +66,16 @@ class ThreeApp {
     intensity: 1.0,
   };
   /**
-   * マテリアル定義のための定数
+   * 月マテリアル定義のための定数
    */
   static MATERIAL_PARAM = {
     color: 0xffffff,
+  };
+  /**
+   * 敵マテリアル定義のための定数
+   */
+  static MATERIAL_PARAM_ENEMY = {
+    color: 0xFFFA77,
   };
 
   wrapper;          // canvas の親要素
@@ -69,7 +86,6 @@ class ThreeApp {
   ambientLight;     // 環境光（アンビエントライト）
   controls;         // オービットコントロール
   axesHelper;       // 軸ヘルパー
-  isDown;           // キーの押下状態用フラグ
   clock;            // 時間管理用 
   sphereGeometry;   // ジオメトリ
   moon;            // 月
@@ -78,6 +94,13 @@ class ThreeApp {
   ufo;             // UFO
   ufoMaterial;     // UFO用マテリアル
   ufoObject;       // UFOオブジェクト
+  enemy;          //敵
+  enemyGeometry;  //敵ジオメトリ
+  enemyMaterial;  //敵マテリアル
+  enemyDirection;  //敵進行方向
+  button;         //追撃ボタン
+  isFire;         //追撃用の真偽値
+
 
   /**
    * コンストラクタ
@@ -91,25 +114,15 @@ class ThreeApp {
     // 再帰呼び出しのための this 固定
     this.render = this.render.bind(this);
 
-    // キーの押下や離す操作を検出できるようにする
-    window.addEventListener('keydown', (keyEvent) => {
-      switch (keyEvent.key) {
-        case ' ':
-          this.isDown = true;
-          break;
-        default:
-      }
-    }, false);
-    window.addEventListener('keyup', (keyEvent) => {
-      this.isDown = false;
-    }, false);
-
     // リサイズイベント
     window.addEventListener('resize', () => {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
     }, false);
+
+    //追撃ボタンの初期化
+    this.button = document.getElementById('js-fire');
   }
 
   
@@ -140,9 +153,9 @@ class ThreeApp {
    */
   init() {
     // レンダラー
-    const color = new THREE.Color(ThreeApp.RENDERER_PARAM.clearColor);
-    this.renderer = new THREE.WebGLRenderer();
-    this.renderer.setClearColor(color);
+    // const color = new THREE.Color(ThreeApp.RENDERER_PARAM.clearColor);
+    this.renderer = new THREE.WebGLRenderer({ alpha: true });
+    this.renderer.setClearColor(0x000000, 0);
     this.renderer.setSize(ThreeApp.RENDERER_PARAM.width, ThreeApp.RENDERER_PARAM.height);
     this.wrapper.appendChild(this.renderer.domElement);
 
@@ -178,8 +191,8 @@ class ThreeApp {
     this.ufoGroup = new THREE.Group();
     this.scene.add(this.ufoGroup);
 
-    // 月のジオメトリを生成
-    this.sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
+    // 球のジオメトリを生成
+    this.sphereGeometry = new THREE.SphereGeometry(1.8, 32, 32);
     // 月のマテリアルとメッシュ
     this.moonMaterial = new THREE.MeshPhongMaterial(ThreeApp.MATERIAL_PARAM);
     this.moonMaterial.map = this.moonTexture;
@@ -196,19 +209,33 @@ class ThreeApp {
       this.degToRad(-90)
     );
 
+    // 敵のマテリアルとメッシュ
+    this.enemyMaterial = new THREE.MeshPhongMaterial(ThreeApp.MATERIAL_PARAM_ENEMY);
+    this.enemy = new THREE.Mesh(this.sphereGeometry, this.enemyMaterial);
+    this.scene.add(this.enemy);
+    this.enemy.position.set(ThreeApp.ENEMY_DISTANCE, ThreeApp.ENEMY_DISTANCE, ThreeApp.ENEMY_DISTANCE);
+    this.enemy.scale.setScalar(0.03);
+    // 進行方向の初期化
+    this.enemyDirection = new THREE.Vector3(0.0, 1.0, 0.0).normalize();
+
     // コントロール
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    // this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     // ヘルパー
-    const axesBarLength = 5.0;
-    this.axesHelper = new THREE.AxesHelper(axesBarLength);
-    this.scene.add(this.axesHelper);
-
-    // キーの押下状態を保持するフラグ
-    this.isDown = false;
+    // const axesBarLength = 5.0;
+    // this.axesHelper = new THREE.AxesHelper(axesBarLength);
+    // this.scene.add(this.axesHelper);
 
     // Clock オブジェクトの生成 
     this.clock = new THREE.Clock();
+
+    
+    /**
+     * 敵に追撃するイベント
+     */
+    this.button.addEventListener('click', () => {
+      this.isFire = true;
+    }, false);
   }
 
   /**
@@ -228,24 +255,37 @@ class ThreeApp {
     requestAnimationFrame(this.render);
 
     // コントロールを更新
-    this.controls.update();
+    // this.controls.update();
 
     const time = this.clock.getElapsedTime();
+    const sin = Math.sin(time);
+    const cos = Math.cos(time);
     
     // 月の回転
     this.moon.rotation.z = time * 0.1;
     this.moon.rotation.x = time * 0.1;
 
     // UFOの動き
-    const sin = Math.sin(time);
-    const cos = Math.cos(time);
+    this.ufoObject.rotation.x = time * 1.2;
     this.ufoGroup.position.set(
-      cos * ThreeApp.UFO_DISTANCE,
-      sin * ThreeApp.UFO_DISTANCE,
-      sin * ThreeApp.UFO_DISTANCE,
+      cos * ThreeApp.UFO_DISTANCE + (Math.sin(time * 1.4)),
+      sin * ThreeApp.UFO_DISTANCE + (Math.sin(time * 1.2)),
+      sin * ThreeApp.UFO_DISTANCE + (Math.sin(time * 1.3)),
     );
     this.ufoGroup.lookAt(0, 0, 0);
-    
+
+    //敵がUFOを追尾する
+    if(this.isFire) {
+      //敵からUFOへの向きのベクトル
+      const subVector = new THREE.Vector3().subVectors(this.ufoGroup.position, this.enemy.position);
+      subVector.normalize();
+      subVector.multiplyScalar(ThreeApp.ENEMY_TURN_SCALE);
+      this.enemyDirection.add(subVector);
+      this.enemyDirection.normalize();
+      const direction = this.enemyDirection.clone();
+      this.enemy.position.add(direction.multiplyScalar(ThreeApp.ENEMY_SPEED));
+    }
+
     // レンダラーで描画
     this.renderer.render(this.scene, this.camera);
   }
